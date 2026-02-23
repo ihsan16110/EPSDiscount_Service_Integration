@@ -1,0 +1,8 @@
+.env
+depenv/
+venv/
+venv_run/
+*.pyc
+__pycache__/
+api.log
+

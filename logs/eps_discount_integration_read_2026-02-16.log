@@ -1,0 +1,111 @@
+2026-02-16 09:53:09,883 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=13.1 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 13.065/13.065/13.065/0.000 ms stderr=
+2026-02-16 09:53:09,884 INFO     eps.read: Checking TCP reachability on 172.16.62.41...
+2026-02-16 09:53:09,897 INFO     eps.read: ✓ TCP port 445 on 172.16.62.41 is reachable
+2026-02-16 10:33:53,655 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=3.59 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.587/3.587/3.587/0.000 ms stderr=
+2026-02-16 10:33:53,657 INFO     eps.read: Checking TCP reachability on 172.16.62.41...
+2026-02-16 10:33:53,663 INFO     eps.read: TCP port 445 on 172.16.62.41 is reachable
+2026-02-16 10:34:29,367 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=3.45 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.454/3.454/3.454/0.000 ms stderr=
+2026-02-16 10:34:29,368 INFO     eps.read: Checking TCP reachability on 172.16.62.41...
+2026-02-16 10:34:29,375 INFO     eps.read: TCP port 445 on 172.16.62.41 is reachable
+2026-02-16 11:14:49,850 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=3.25 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.254/3.254/3.254/0.000 ms stderr=
+2026-02-16 11:14:49,851 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.62.41 (user=Administrator)...
+2026-02-16 11:14:49,946 INFO     eps.read: [WMI] Failed for 172.16.62.41: DCERPCException: rpc_s_access_denied
+2026-02-16 11:14:49,947 INFO     eps.read: [WMI] Returned None for 172.16.62.41, falling through to SVCCTL
+2026-02-16 11:14:49,948 INFO     eps.read: [SVCCTL] Connecting to 172.16.62.41 via \pipe\svcctl (user=Administrator)...
+2026-02-16 11:14:50,013 INFO     eps.read: [SVCCTL] Failed on 172.16.62.41: SessionError: SMB SessionError: code: 0xc000006d - STATUS_LOGON_FAILURE - The attempted logon is invalid. This is either due to a bad username or authentication information.
+2026-02-16 11:14:50,014 INFO     eps.read: [SVCCTL] Returned None for 172.16.62.41, falling through to TCP probe
+2026-02-16 11:14:50,015 INFO     eps.read: Checking TCP reachability on 172.16.62.41...
+2026-02-16 11:14:50,020 INFO     eps.read: TCP port 445 on 172.16.62.41 is reachable
+2026-02-16 11:14:50,020 INFO     eps.read: Note: process check was attempted but didn't find the process
+2026-02-16 11:23:42,945 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=3.10 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.097/3.097/3.097/0.000 ms stderr=
+2026-02-16 11:23:42,946 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.62.41 (user=Administrator)...
+2026-02-16 11:23:43,100 INFO     eps.read: [WMI] Executing query on 172.16.62.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:23:43,242 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.62.41
+2026-02-16 11:32:19,575 INFO     eps.read: Ping 172.16.62.41 using 'ping -c 1 172.16.62.41' returned 0; stdout=PING 172.16.62.41 (172.16.62.41) 56(84) bytes of data.
+64 bytes from 172.16.62.41: icmp_seq=1 ttl=63 time=5.57 ms
+
+--- 172.16.62.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.572/5.572/5.572/0.000 ms stderr=
+2026-02-16 11:32:19,576 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.62.41 (user=Administrator)...
+2026-02-16 11:32:19,780 INFO     eps.read: [WMI] Executing query on 172.16.62.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:32:20,234 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.62.41
+2026-02-16 11:32:37,423 INFO     eps.read: Ping 172.16.52.41 using 'ping -c 1 172.16.52.41' returned 0; stdout=PING 172.16.52.41 (172.16.52.41) 56(84) bytes of data.
+64 bytes from 172.16.52.41: icmp_seq=1 ttl=63 time=4.81 ms
+
+--- 172.16.52.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 4.812/4.812/4.812/0.000 ms stderr=
+2026-02-16 11:32:37,424 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.52.41 (user=Administrator)...
+2026-02-16 11:32:37,536 INFO     eps.read: [WMI] Executing query on 172.16.52.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:32:37,993 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.52.41
+2026-02-16 11:32:51,042 INFO     eps.read: Ping 172.16.109.41 using 'ping -c 1 172.16.109.41' returned 0; stdout=PING 172.16.109.41 (172.16.109.41) 56(84) bytes of data.
+64 bytes from 172.16.109.41: icmp_seq=1 ttl=63 time=5.43 ms
+
+--- 172.16.109.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.433/5.433/5.433/0.000 ms stderr=
+2026-02-16 11:32:51,043 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.109.41 (user=Administrator)...
+2026-02-16 11:32:51,243 INFO     eps.read: [WMI] Executing query on 172.16.109.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:32:51,733 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.109.41
+2026-02-16 11:34:06,051 INFO     eps.read: Ping 172.16.52.41 using 'ping -c 1 172.16.52.41' returned 0; stdout=PING 172.16.52.41 (172.16.52.41) 56(84) bytes of data.
+64 bytes from 172.16.52.41: icmp_seq=1 ttl=63 time=6.16 ms
+
+--- 172.16.52.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 6.161/6.161/6.161/0.000 ms stderr=
+2026-02-16 11:34:06,052 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.52.41 (user=Administrator)...
+2026-02-16 11:34:06,224 INFO     eps.read: [WMI] Executing query on 172.16.52.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:34:06,303 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' NOT found on 172.16.52.41
+2026-02-16 11:34:30,491 INFO     eps.read: Ping 172.16.52.41 using 'ping -c 1 172.16.52.41' returned 0; stdout=PING 172.16.52.41 (172.16.52.41) 56(84) bytes of data.
+64 bytes from 172.16.52.41: icmp_seq=1 ttl=63 time=6.75 ms
+
+--- 172.16.52.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 6.750/6.750/6.750/0.000 ms stderr=
+2026-02-16 11:34:30,492 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.52.41 (user=Administrator)...
+2026-02-16 11:34:30,613 INFO     eps.read: [WMI] Executing query on 172.16.52.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:34:30,738 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.52.41
+2026-02-16 11:35:01,465 INFO     eps.read: Ping 172.16.52.41 using 'ping -c 1 172.16.52.41' returned 0; stdout=PING 172.16.52.41 (172.16.52.41) 56(84) bytes of data.
+64 bytes from 172.16.52.41: icmp_seq=1 ttl=63 time=4.87 ms
+
+--- 172.16.52.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 4.866/4.866/4.866/0.000 ms stderr=
+2026-02-16 11:35:01,466 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.52.41 (user=Administrator)...
+2026-02-16 11:35:01,651 INFO     eps.read: [WMI] Executing query on 172.16.52.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:35:01,831 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' FOUND on 172.16.52.41
+2026-02-16 11:35:13,312 INFO     eps.read: Ping 172.16.52.41 using 'ping -c 1 172.16.52.41' returned 0; stdout=PING 172.16.52.41 (172.16.52.41) 56(84) bytes of data.
+64 bytes from 172.16.52.41: icmp_seq=1 ttl=63 time=5.40 ms
+
+--- 172.16.52.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 5.399/5.399/5.399/0.000 ms stderr=
+2026-02-16 11:35:13,313 INFO     eps.read: [WMI] Attempting DCOM connection to 172.16.52.41 (user=Administrator)...
+2026-02-16 11:35:13,441 INFO     eps.read: [WMI] Executing query on 172.16.52.41: SELECT Name FROM Win32_Process WHERE Name = 'EPSDiscount.exe'
+2026-02-16 11:35:13,518 INFO     eps.read: [WMI] Process 'EPSDiscount.exe' NOT found on 172.16.52.41

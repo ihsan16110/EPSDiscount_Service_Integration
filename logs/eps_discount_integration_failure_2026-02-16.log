@@ -1,0 +1,2 @@
+2026-02-16 11:14:49,946 ERROR    eps.failure: [WMI] Connection to 172.16.62.41 failed: rpc_s_access_denied
+2026-02-16 11:14:50,014 ERROR    eps.failure: [SVCCTL] Error on 172.16.62.41: SMB SessionError: code: 0xc000006d - STATUS_LOGON_FAILURE - The attempted logon is invalid. This is either due to a bad username or authentication information.

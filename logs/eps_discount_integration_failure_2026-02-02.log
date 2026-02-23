@@ -1,0 +1,26 @@
+2026-02-02 21:11:51,900 ERROR    eps.failure: tasklist exception for 172.17.52.41: Command 'tasklist /S 172.17.52.41 /U mahdi /P Universal /FI "IMAGENAME eq EPSDiscount.exe"' timed out after 15 seconds
+Traceback (most recent call last):
+  File "F:\Applications On Stage\Discount_Service_Integration_Selfcheckout\eps_discount_integration.py", line 222, in is_service_running
+    result = subprocess.run(tasklist_cmd, shell=True, capture_output=True, text=True, timeout=15)
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1646, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command 'tasklist /S 172.17.52.41 /U mahdi /P Universal /FI "IMAGENAME eq EPSDiscount.exe"' timed out after 15 seconds
+2026-02-02 21:13:03,874 ERROR    eps.failure: tasklist exception for 172.17.52.41: Command 'tasklist /S 172.17.52.41 /U mahdi /P Universal /FI "IMAGENAME eq EPSDiscount.exe"' timed out after 15 seconds
+Traceback (most recent call last):
+  File "F:\Applications On Stage\Discount_Service_Integration_Selfcheckout\eps_discount_integration.py", line 222, in is_service_running
+    result = subprocess.run(tasklist_cmd, shell=True, capture_output=True, text=True, timeout=15)
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mahdi\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1646, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command 'tasklist /S 172.17.52.41 /U mahdi /P Universal /FI "IMAGENAME eq EPSDiscount.exe"' timed out after 15 seconds

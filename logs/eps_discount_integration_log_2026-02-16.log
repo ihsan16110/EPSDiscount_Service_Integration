@@ -1,0 +1,42 @@
+2026-02-16 09:34:40,911 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 09:34:40,912 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 09:34:40,915 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-16 09:34:40,916 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-16 09:53:09,858 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 10:20:47,149 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 10:20:47,162 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 10:29:56,390 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 10:29:56,426 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 10:29:56,431 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 10:29:56,434 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 10:33:53,639 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 10:34:29,351 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:14:19,937 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:14:19,955 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:14:32,497 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:14:32,501 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:14:32,593 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:14:32,595 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:14:49,838 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:23:06,724 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:23:06,765 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:23:17,473 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:23:17,474 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:23:17,475 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:23:17,475 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:23:42,931 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:32:19,548 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:32:37,409 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:32:51,019 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:34:06,035 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:34:30,459 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:34:37,070 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:34:37,088 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:34:56,569 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:34:56,578 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:34:56,592 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:34:56,601 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:35:01,448 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:35:13,295 INFO     eps_discount_integration: Checking exe status on 1 servers
+2026-02-16 11:35:23,618 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:35:23,666 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down

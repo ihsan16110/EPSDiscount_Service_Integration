@@ -1,0 +1,42 @@
+2026-02-16 09:34:40,912 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 09:34:40,913 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 09:34:40,916 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-16 09:34:40,919 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-16 09:53:09,899 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Unknown | available: False | message: EPSDiscount.exe reachability verified but process check unavailable from this runtime. Run service natively on Windows to verify.
+2026-02-16 10:20:47,151 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 10:20:47,166 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 10:29:56,424 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 10:29:56,427 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 10:29:56,431 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 10:29:56,435 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 10:33:53,665 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Unknown | available: False | message: EPSDiscount.exe reachability verified but process check unavailable from this runtime. Run service natively on Windows to verify.
+2026-02-16 10:34:29,376 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Unknown | available: False | message: EPSDiscount.exe reachability verified but process check unavailable from this runtime. Run service natively on Windows to verify.
+2026-02-16 11:14:19,938 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:14:19,956 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:14:32,498 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:14:32,502 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:14:32,594 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:14:32,596 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:14:50,021 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Not Running | available: False | message: EPSDiscount.exe is not running
+2026-02-16 11:23:06,724 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:23:06,766 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:23:17,473 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:23:17,475 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:23:17,476 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:23:17,476 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:23:43,244 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:32:20,236 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:32:37,995 INFO     eps.response: outlet_code: D007 | ip_address: 172.16.52.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:32:51,737 INFO     eps.response: outlet_code: D109 | ip_address: 172.16.109.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:34:06,305 INFO     eps.response: outlet_code: D007 | ip_address: 172.16.52.41 | status: Not Running | available: False | message: EPSDiscount.exe is not running
+2026-02-16 11:34:30,740 INFO     eps.response: outlet_code: D007 | ip_address: 172.16.52.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:34:37,071 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:34:37,092 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:34:56,584 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:34:56,592 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-16 11:34:56,596 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:34:56,605 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-16 11:35:01,838 INFO     eps.response: outlet_code: D007 | ip_address: 172.16.52.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-16 11:35:13,520 INFO     eps.response: outlet_code: D007 | ip_address: 172.16.52.41 | status: Not Running | available: False | message: EPSDiscount.exe is not running
+2026-02-16 11:35:23,619 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-16 11:35:23,668 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down

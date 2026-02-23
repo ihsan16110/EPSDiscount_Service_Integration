@@ -1,0 +1,83 @@
+2026-02-23 06:31:43,012 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:31:43,016 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:31:43,021 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 06:31:43,037 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 06:32:57,105 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.62.41 via Task Scheduler
+2026-02-23 06:32:57,129 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.62.41 (outlet D062) via TSCH
+2026-02-23 06:32:57,130 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 06:33:59,833 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 06:33:59,856 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 06:33:59,857 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 06:36:31,955 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 06:36:31,962 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 06:36:48,339 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:36:48,340 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:36:48,341 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 06:36:48,341 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 06:38:08,205 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 06:38:08,225 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 06:38:08,226 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 06:47:38,172 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:47:38,173 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 06:47:38,180 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 06:47:38,180 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:02:15,885 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:02:15,908 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:02:15,909 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:04:27,410 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:04:27,414 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:07:33,376 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:07:33,379 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:07:33,635 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:07:33,637 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:07:44,056 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:07:44,077 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:07:44,078 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:10:24,160 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:10:24,168 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:10:37,596 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:10:37,598 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:10:37,690 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:10:37,692 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:10:51,102 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:10:51,131 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:10:51,132 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:36:10,646 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:36:10,667 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:36:37,746 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:36:37,748 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:36:37,792 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:36:37,794 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:37:41,972 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:37:41,993 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:37:41,994 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:41:06,863 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:41:06,886 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:41:21,360 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:41:21,391 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:41:21,616 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:41:21,621 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:43:07,923 INFO     eps.response: outlet_code: string | ip_address: string | status: Offline | available: False | message: Server is not reachable
+2026-02-23 07:43:52,530 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:43:52,557 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:43:52,558 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:43:55,763 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | status: Not Running | available: False | message: EPSDiscount.exe is not running
+2026-02-23 07:44:14,915 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:44:14,937 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:44:14,938 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:45:22,795 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-23 07:45:27,758 INFO     eps.response: outlet_code: string | ip_address: string | status: Offline | available: False | message: Server is not reachable
+2026-02-23 07:49:00,351 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:49:00,378 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:49:08,322 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:49:08,325 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:49:08,328 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:49:08,329 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:52:36,902 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:52:36,924 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:52:36,925 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:53:03,966 INFO     eps.response: [TSCH] Successfully started 'D:\EPSNew\EPSDiscount.exe' on 172.16.13.41 via Task Scheduler
+2026-02-23 07:53:03,986 INFO     eps.response: Executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 (outlet D019) via TSCH
+2026-02-23 07:53:03,987 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | success: True | message: Exe executed via Task Scheduler (impacket)
+2026-02-23 07:55:05,685 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:55:05,712 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down

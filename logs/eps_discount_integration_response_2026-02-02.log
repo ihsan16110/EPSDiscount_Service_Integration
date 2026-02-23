@@ -1,0 +1,96 @@
+2026-02-02 15:25:56,925 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 15:26:12,668 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 15:26:38,791 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 19:07:06,932 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:24:17,441 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:24:17,454 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:24:17,543 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:24:17,546 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:29:12,455 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:29:12,919 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:29:23,277 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:29:23,280 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:29:23,545 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:29:23,547 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:34:06,746 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:34:07,228 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:36:46,879 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:36:46,883 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:36:47,452 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:36:47,454 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:46:43,125 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:46:43,632 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 13:46:57,085 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:46:57,092 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 13:46:58,341 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 13:46:58,347 INFO     eps.response: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes
+2026-02-02 14:26:28,249 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 14:26:29,063 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 20:27:06,002 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 20:27:06,131 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 20:39:35,733 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 20:39:35,890 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 20:39:35,894 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 20:40:53,534 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 20:40:53,671 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 20:40:53,676 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 20:41:48,527 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 20:41:48,641 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 20:43:08,228 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 20:43:14,288 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 20:43:14,422 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:09:53,104 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:09:53,236 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:09:53,239 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:10:15,273 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:10:15,369 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:13:10,026 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:14:50,584 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:14:50,699 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:15:41,938 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:15:48,525 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:15:48,635 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:17:08,236 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:18:55,951 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:18:56,077 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:19:50,111 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:20:59,926 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:21:00,067 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:21:14,925 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:23:09,531 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:23:09,630 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:23:23,975 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:24:16,501 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:24:16,636 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:25:16,947 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:25:26,987 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:25:27,104 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:33:34,936 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:33:35,099 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:33:48,949 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:34:43,456 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:34:43,567 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:37:50,774 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:37:50,935 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:37:50,938 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:38:32,179 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:38:32,312 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:38:45,746 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:38:58,383 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:38:58,499 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:39:16,607 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:39:46,629 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:39:46,791 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:40:02,104 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:40:31,719 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:40:31,861 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:53:25,220 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 21:53:34,519 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 21:53:34,768 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 21:53:59,289 INFO     eps.response: outlet_code: D019 | ip_address: 172.16.13.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-02 21:55:16,198 INFO     eps.response: outlet_code: D062 | ip_address: 172.16.62.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-02 21:56:50,530 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-02 22:03:59,978 INFO     eps.response: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-02 22:04:00,115 INFO     eps.response: [MODE] platform=windows; in_container=False; powershell=True; psexec_set=yes
+2026-02-02 22:04:34,447 INFO     eps.response: outlet_code: D109 | ip_address: 172.16.109.41 | status: Running | available: True | message: EPSDiscount.exe is running
+2026-02-02 22:06:14,937 INFO     eps.response: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
