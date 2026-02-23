@@ -55,3 +55,15 @@
 2026-02-23 07:53:00,924 INFO     eps.write: [TSCH] Task '\EPS_TMP_b2ec4f4a' registered on 172.16.13.41
 2026-02-23 07:53:00,946 INFO     eps.write: [TSCH] Task '\EPS_TMP_b2ec4f4a' triggered on 172.16.13.41
 2026-02-23 07:53:03,965 INFO     eps.write: [TSCH] Task '\EPS_TMP_b2ec4f4a' deleted from 172.16.13.41
+2026-02-23 07:55:19,948 INFO     eps.write: [TSCH] Attempting Task Scheduler execution on 172.16.13.41...
+2026-02-23 07:55:19,949 INFO     eps.write: [TSCH] exe_path='D:\EPS_NEW\EPSDiscount.exe' | exe_dir='D:\EPS_NEW' | user='Administrator' | target=172.16.13.41
+2026-02-23 07:55:19,949 INFO     eps.write: [TSCH] Connecting to 172.16.13.41 Task Scheduler (user=Administrator)...
+2026-02-23 07:55:20,132 INFO     eps.write: [TSCH] Task '\EPS_TMP_c10f766c' registered on 172.16.13.41
+2026-02-23 07:55:20,153 INFO     eps.write: [TSCH] Task '\EPS_TMP_c10f766c' triggered on 172.16.13.41
+2026-02-23 07:55:23,193 INFO     eps.write: [TSCH] Task '\EPS_TMP_c10f766c' deleted from 172.16.13.41
+2026-02-23 07:55:35,623 INFO     eps.write: [TSCH] Attempting Task Scheduler execution on 172.16.13.41...
+2026-02-23 07:55:35,624 INFO     eps.write: [TSCH] exe_path='D:\EPS_NEW\EPSDiscount.exe' | exe_dir='D:\EPS_NEW' | user='Administrator' | target=172.16.13.41
+2026-02-23 07:55:35,624 INFO     eps.write: [TSCH] Connecting to 172.16.13.41 Task Scheduler (user=Administrator)...
+2026-02-23 07:55:35,809 INFO     eps.write: [TSCH] Task '\EPS_TMP_5e53bb2f' registered on 172.16.13.41
+2026-02-23 07:55:35,830 INFO     eps.write: [TSCH] Task '\EPS_TMP_5e53bb2f' triggered on 172.16.13.41
+2026-02-23 07:55:38,859 INFO     eps.write: [TSCH] Task '\EPS_TMP_5e53bb2f' deleted from 172.16.13.41

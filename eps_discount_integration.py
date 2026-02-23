@@ -32,14 +32,10 @@ logger = logging.getLogger(__name__)
 
 # --- File-based category loggers (read, write, response, failure) ---
 def setup_category_file_loggers(log_dir: str = None):
-    """Create date-based log files for categories and return loggers.
+    """Create a single date-based log file with all categories writing sequentially.
 
-    Files created:
-      - eps_discount_integration_log_YYYY-MM-DD.log (combined)
-      - eps_discount_integration_read_YYYY-MM-DD.log
-      - eps_discount_integration_write_YYYY-MM-DD.log
-      - eps_discount_integration_response_YYYY-MM-DD.log
-      - eps_discount_integration_failure_YYYY-MM-DD.log
+    File created:
+      - eps_discount_integration_service_log_YYYY-MM-DD.log
     """
     if log_dir is None:
         log_dir = get_env_pref("LOG_DIR", "logs")
@@ -47,32 +43,32 @@ def setup_category_file_loggers(log_dir: str = None):
     os.makedirs(log_dir, exist_ok=True)
 
     date = datetime.now().strftime("%Y-%m-%d")
-    base = "eps_discount_integration"
+    log_file = os.path.join(log_dir, f"eps_discount_integration_service_log_{date}.log")
 
-    files = {
-        "combined": os.path.join(log_dir, f"{base}_log_{date}.log"),
-        "read": os.path.join(log_dir, f"{base}_read_{date}.log"),
-        "write": os.path.join(log_dir, f"{base}_write_{date}.log"),
-        "response": os.path.join(log_dir, f"{base}_response_{date}.log"),
-        "failure": os.path.join(log_dir, f"{base}_failure_{date}.log"),
-    }
+    fmt = Formatter("%(asctime)s %(levelname)-8s [%(category)s] %(message)s")
 
-    fmt = Formatter("%(asctime)s %(levelname)-8s %(name)s: %(message)s")
+    # Attach to root logger for general/combined logging
+    root_filter = logging.Filter()
+    root_filter.filter = lambda record: setattr(record, 'category', getattr(record, 'category', 'GENERAL')) or True
+    shared_handler_root = FileHandler(log_file, encoding="utf-8")
+    shared_handler_root.setFormatter(fmt)
+    shared_handler_root.setLevel(logging.INFO)
+    shared_handler_root.addFilter(root_filter)
+    logging.getLogger().addHandler(shared_handler_root)
 
-    # Combined handler attached to root logger (info+)
-    combined_h = FileHandler(files["combined"], encoding="utf-8")
-    combined_h.setFormatter(fmt)
-    combined_h.setLevel(logging.INFO)
-    logging.getLogger().addHandler(combined_h)
-
-    # Category-specific loggers (do not propagate to avoid duplication)
+    # Category-specific loggers all writing to the same file
     category_loggers = {}
     for name in ("read", "write", "response", "failure"):
-        h = FileHandler(files[name], encoding="utf-8")
-        h.setFormatter(fmt)
-        # choose level
         lvl = logging.INFO if name in ("read", "write", "response") else logging.ERROR
+        h = FileHandler(log_file, encoding="utf-8")
+        h.setFormatter(fmt)
         h.setLevel(lvl)
+
+        # Add filter to inject category into log records
+        cat_label = name.upper()
+        cat_filter = logging.Filter()
+        cat_filter.filter = lambda record, cat=cat_label: setattr(record, 'category', cat) or True
+        h.addFilter(cat_filter)
 
         lg = logging.getLogger(f"eps.{name}")
         lg.setLevel(lvl)

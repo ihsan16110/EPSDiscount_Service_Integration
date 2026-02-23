@@ -70,3 +70,13 @@
 2026-02-23 07:53:03,985 INFO     eps_discount_integration: Successfully executed D:\EPSNew\EPSDiscount.exe on 172.16.13.41 via Task Scheduler
 2026-02-23 07:55:05,684 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
 2026-02-23 07:55:05,711 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 07:55:13,582 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:55:13,584 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:55:13,689 INFO     eps_discount_integration: [SERVER_READY] EPS Discount Integration API is now running and ready to accept requests
+2026-02-23 07:55:13,691 INFO     eps_discount_integration: [MODE] platform=linux; in_container=True; powershell=False; psexec_set=yes; impacket=True
+2026-02-23 07:55:19,935 INFO     eps_discount_integration: Running exe on 1 servers
+2026-02-23 07:55:23,229 INFO     eps_discount_integration: Successfully executed D:\EPS_NEW\EPSDiscount.exe on 172.16.13.41 via Task Scheduler
+2026-02-23 07:55:35,609 INFO     eps_discount_integration: Running exe on 1 servers
+2026-02-23 07:55:38,880 INFO     eps_discount_integration: Successfully executed D:\EPS_NEW\EPSDiscount.exe on 172.16.13.41 via Task Scheduler
+2026-02-23 08:23:14,563 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down
+2026-02-23 08:23:14,570 INFO     eps_discount_integration: [SERVER_SHUTDOWN] EPS Discount Integration API is shutting down

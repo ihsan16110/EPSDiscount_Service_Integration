@@ -90,3 +90,15 @@ rtt min/avg/max/mdev = 4.531/4.531/4.531/0.000 ms stderr=
 --- 172.16.13.41 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 5.106/5.106/5.106/0.000 ms stderr=
+2026-02-23 07:55:19,947 INFO     eps.read: Ping 172.16.13.41 using 'ping -c 1 172.16.13.41' returned 0; stdout=PING 172.16.13.41 (172.16.13.41) 56(84) bytes of data.
+64 bytes from 172.16.13.41: icmp_seq=1 ttl=63 time=3.84 ms
+
+--- 172.16.13.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 3.841/3.841/3.841/0.000 ms stderr=
+2026-02-23 07:55:35,622 INFO     eps.read: Ping 172.16.13.41 using 'ping -c 1 172.16.13.41' returned 0; stdout=PING 172.16.13.41 (172.16.13.41) 56(84) bytes of data.
+64 bytes from 172.16.13.41: icmp_seq=1 ttl=63 time=4.54 ms
+
+--- 172.16.13.41 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 4.538/4.538/4.538/0.000 ms stderr=
