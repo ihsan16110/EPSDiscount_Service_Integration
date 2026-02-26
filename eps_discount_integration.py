@@ -1101,18 +1101,9 @@ async def deploy_new_outlet(servers: List[ServerInfo]):
     if not source_path:
         raise HTTPException(status_code=400, detail="SOURCE_FILE not configured")
 
-    # Authenticate to source network share if it's a UNC path
-    if source_path.startswith("\\\\"):
-        share_root = "\\\\".join(source_path.split("\\")[:4])  # e.g. \\192.168.12.208\d$
-        try:
-            subprocess.run(
-                f'net use "{share_root}" /user:{username} {password}',
-                shell=True, capture_output=True, timeout=10
-            )
-        except Exception as e:
-            logger.warning(f"net use to source share failed: {e}")
-
-    if not os.path.exists(source_path):
+    # Skip os.path.exists() for UNC paths — network shares need auth first
+    # The copy operation will report errors per-server if the source is missing
+    if not source_path.startswith("\\\\") and not os.path.exists(source_path):
         raise HTTPException(status_code=400, detail=f"Source file not found: {source_path}")
 
     logger.info(f"Deploying {os.path.basename(source_path)} to {len(servers)} outlets -> D$\\{dest_path}")
