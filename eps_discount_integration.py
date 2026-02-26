@@ -748,7 +748,31 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
             share = 'D$'
             remote_filename = dest_path + '\\' + os.path.basename(src_file)
 
-            _smb_copy_file(ip_address, src_file, share, remote_filename, username, password)
+            # If source is a UNC path, download from source server first
+            local_src = src_file
+            tmp_path = None
+            if src_file.startswith("\\\\"):
+                import tempfile
+                parts = src_file.lstrip("\\").split("\\")
+                source_ip = parts[0]         # e.g. 192.168.12.208
+                source_share = parts[1]      # e.g. d$
+                source_remote = "\\".join(parts[2:])  # e.g. EPSV\EPSDiscount.exe
+
+                tmp_fd, tmp_path = tempfile.mkstemp(suffix=os.path.basename(src_file))
+                os.close(tmp_fd)
+
+                conn = ImpacketSMBConnection(source_ip, source_ip, timeout=30)
+                conn.login(username, password, '')
+                with open(tmp_path, 'wb') as fh:
+                    conn.getFile(source_share, source_remote, fh.write)
+                conn.close()
+                local_src = tmp_path
+
+            try:
+                _smb_copy_file(ip_address, local_src, share, remote_filename, username, password)
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
 
             logger.info(f"Successfully copied {src_file} to {ip_address} via SMB")
             if write_logger:
@@ -785,7 +809,15 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
     # --- Windows-native path (existing behavior) ---
     dest_file = os.path.normpath(f'\\\\{ip_address}\\D$\\{dest_path}')
     try:
-        # Authenticate and map network drive
+        # Authenticate to source server if source is a UNC path
+        if src_file.startswith("\\\\"):
+            source_server = src_file.lstrip("\\").split("\\")[0]
+            subprocess.run(
+                f"net use \\\\{source_server} /user:{username} {password}",
+                shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10
+            )
+
+        # Authenticate to destination server
         subprocess.run(
             f"net use \\\\{ip_address} /user:{username} {password}",
             shell=True, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10
