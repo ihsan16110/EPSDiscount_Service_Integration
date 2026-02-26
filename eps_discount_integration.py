@@ -165,6 +165,7 @@ class DeploymentRequest(BaseModel):
     servers: List[ServerInfo]
     # Defaults removed for security. Supply per-request or via environment variables.
     source_file: Optional[str] = None
+    destination_path: Optional[str] = None
     username: Optional[str] = None
     password: Optional[str] = None
 
@@ -728,19 +729,24 @@ def is_service_running(ip_address: str, service_name: str, username: str, passwo
             failure_logger.exception(f"is_service_running error for {ip_address}: {e}")
         return False
 
-def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, username: str, password: str) -> dict:
+def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, username: str, password: str, dest_path: str = None) -> dict:
     """Copy deployment file to remote server.
 
     On Windows: uses net use + shutil.copy (existing behavior).
     On Linux/Docker: uses impacket SMB client.
+
+    dest_path: remote folder path relative to D$ (e.g. 'EPS_New', 'EPS\\EPS').
+               Defaults to EPS_DEST_PATH env var or 'EPS_New'.
     """
+    if dest_path is None:
+        dest_path = get_env_pref("DEST_PATH", "EPS_New")
     system = platform.system().lower()
 
     # --- Cross-platform path: use impacket SMB ---
     if system != "windows" and IMPACKET_AVAILABLE:
         try:
             share = 'D$'
-            remote_filename = 'EPS_New\\' + os.path.basename(src_file)
+            remote_filename = dest_path + '\\' + os.path.basename(src_file)
 
             _smb_copy_file(ip_address, src_file, share, remote_filename, username, password)
 
@@ -751,7 +757,7 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
                 "outlet_code": outlet_code,
                 "ip_address": ip_address,
                 "success": True,
-                "message": "File deployed successfully via SMB"
+                "message": "Exe deployed successfully via SMB"
             }
         except Exception as e:
             logger.error(f"SMB copy to {ip_address} failed: {e}")
@@ -777,7 +783,7 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
         }
 
     # --- Windows-native path (existing behavior) ---
-    dest_file = os.path.normpath(f'\\\\{ip_address}\\D$\\EPS_New')
+    dest_file = os.path.normpath(f'\\\\{ip_address}\\D$\\{dest_path}')
     try:
         # Authenticate and map network drive
         subprocess.run(
@@ -795,7 +801,7 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
             "outlet_code": outlet_code,
             "ip_address": ip_address,
             "success": True,
-            "message": "File deployed successfully"
+            "message": "Exe deployed successfully"
         }
     except Exception as e:
         logger.error(f"Error copying file to {ip_address}: {e}")
@@ -821,47 +827,16 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
     """Run EPSDiscount.exe on remote server.
 
     Method selection is platform-aware:
-      - Windows: PsExec → impacket TSCH → PowerShell
-      - Linux/Docker: impacket TSCH only (PsExec/PowerShell are Windows-only)
+      - Windows: impacket TSCH → PowerShell
+      - Linux/Docker: impacket TSCH only (PowerShell is Windows-only)
     """
-    exe_path = get_env_pref("SOURCE_FILE") or r"D:\EPS_NEW\EPSDiscount.exe"
+    dest_folder = get_env_pref("DEST_PATH", "EPS_New")
+    exe_path = f"D:\\{dest_folder}\\EPSDiscount.exe"
     system = platform.system().lower()
     is_windows = system == "windows"
     attempts = []  # track each method tried for diagnostics
 
-    # --- Method 1: PsExec (Windows-only, interactive session 1, detached) ---
-    if is_windows:
-        try:
-            psexec = os.environ.get("PSEXEC_PATH", "psexec")
-            psexec_quoted = f'"{psexec}"'
-            cmd = f'{psexec_quoted} \\\\{ip_address} -u {username} -p {password} -i 1 -d -accepteula "{exe_path}"'
-            if read_logger:
-                read_logger.info(f"[PsExec] Running on {ip_address} for {outlet_code}: {exe_path}")
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
-            launch_output = result.stdout + result.stderr
-
-            if "started on" in launch_output:
-                pid = result.returncode
-                logger.info(f"Successfully started {exe_path} on {ip_address} via PsExec (PID={pid})")
-                if response_logger:
-                    response_logger.info(f"Started {exe_path} on {ip_address} (outlet {outlet_code}) via PsExec (PID={pid})")
-                return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": f"Exe started via PsExec (PID={pid})"}
-            else:
-                error_detail = result.stderr.strip() or result.stdout.strip()
-                attempts.append(f"PsExec: {error_detail}")
-                logger.warning(f"PsExec launch failed on {ip_address}: {error_detail}")
-                if failure_logger:
-                    failure_logger.error(f"PsExec launch failed on {ip_address} (outlet {outlet_code}): {error_detail}")
-        except subprocess.TimeoutExpired:
-            attempts.append("PsExec: timed out")
-            logger.warning(f"PsExec timed out on {ip_address}")
-            if failure_logger:
-                failure_logger.error(f"PsExec timed out on {ip_address} (outlet {outlet_code})")
-        except Exception as e:
-            attempts.append(f"PsExec: {e}")
-            logger.debug(f"PsExec run failed for {ip_address}: {e}")
-
-    # --- Method 2: impacket Task Scheduler (cross-platform, works from Linux/Docker) ---
+    # --- Method 1: impacket Task Scheduler (cross-platform, works from Linux/Docker) ---
     if IMPACKET_AVAILABLE:
         try:
             if write_logger:
@@ -884,7 +859,7 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
         attempts.append("TSCH: impacket not available")
         logger.warning(f"impacket not available — cannot use Task Scheduler for {ip_address}")
 
-    # --- Method 3: PowerShell remote start (Windows-only) ---
+    # --- Method 2: PowerShell remote start (Windows-only) ---
     if is_windows:
         try:
             ps_cmd = (
@@ -958,7 +933,6 @@ def check_exe_status(outlet_code: str, ip_address: str, username: str, password:
 
     # Not running. Optionally attempt to start if AUTO_START_EXE is enabled
     auto_start = os.environ.get("AUTO_START_EXE", "false").lower() in ("1", "true", "yes")
-    exe_path = get_env_pref("SOURCE_FILE") or r"D:\EPS_NEW\EPSDiscount.exe"
 
     if auto_start and username and password:
         start_result = run_exe_on_server(outlet_code, ip_address, username, password)
@@ -1111,95 +1085,76 @@ async def run_exe_on_servers(servers: List[ServerInfo]):
     }
 
 @app.post("/api/deploy-new-outlet")
-async def deploy_new_outlet(deployment: DeploymentRequest):
+async def deploy_new_outlet(servers: List[ServerInfo]):
     """
-    Endpoint 3: Deploy exe to new outlet and run it
+    Endpoint 3: Deploy file to new outlet (copy only, no exe execution)
+    Request body: [ { "outlet_code": "D007", "ip_address": "172.16.51.41" } ]
     """
-    if not deployment.servers:
+    if not servers:
         raise HTTPException(status_code=400, detail="No servers provided")
 
-    # Resolve credentials and source path from request or environment
-    source_path = deployment.source_file or get_env_pref("SOURCE_FILE")
-    username = deployment.username or get_env_pref("USERNAME")
-    password = deployment.password or get_env_pref("PASSWORD")
+    source_path = get_env_pref("SOURCE_FILE")
+    dest_path = get_env_pref("DEST_PATH", "EPS_New")
+    username = get_env_pref("USERNAME")
+    password = get_env_pref("PASSWORD")
 
     if not source_path or not os.path.exists(source_path):
         raise HTTPException(status_code=400, detail=f"Source file not found: {source_path}")
 
-    logger.info(f"Deploying exe to {len(deployment.servers)} new outlets")
+    logger.info(f"Deploying {os.path.basename(source_path)} to {len(servers)} outlets -> D$\\{dest_path}")
     results = []
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = []
 
-        for s in deployment.servers:
-            # Check if server is online first
+        for s in servers:
             if not is_server_online(s.ip_address):
                 results.append({
                     "outlet_code": s.outlet_code,
                     "ip_address": s.ip_address,
-                    "deployment": {"success": False, "message": "Server is offline"},
-                    "Execution": None
+                    "success": False,
+                    "message": f"Server is offline for Outlet {s.outlet_code}"
                 })
                 continue
 
-            # Copy file
             copy_future = executor.submit(
                 copy_file_to_server, s.outlet_code, s.ip_address,
-                source_path, username, password
+                source_path, username, password, dest_path
             )
             futures.append((s.outlet_code, s.ip_address, copy_future))
 
-        # Process copy results and trigger exe Execution
         for outlet_code, ip_address, copy_future in futures:
             try:
                 copy_result = copy_future.result()
-
                 if copy_result["success"]:
-                    # Deploy successful, now run exe using resolved credentials
-                    exec_result = run_exe_on_server(outlet_code, ip_address, username, password)
-                    result = {
-                        "outlet_code": outlet_code,
-                        "ip_address": ip_address,
-                        "deployment": copy_result,
-                        "Execution": exec_result
-                    }
-                    results.append(result)
+                    copy_result["message"] = f"Exe has been Successfully Deployed On Outlet {outlet_code}"
                     if response_logger:
                         response_logger.info(
                             f"outlet_code: {outlet_code} | ip_address: {ip_address} | "
-                            f"deployment_success: {copy_result.get('success')} | "
-                            f"execution_success: {exec_result.get('success', 'N/A')} | "
-                            f"message: {exec_result.get('message', copy_result.get('message', 'Deployment successful'))}"
+                            f"deployed: {os.path.basename(source_path)} -> D$\\{dest_path}"
                         )
                 else:
-                    result = {
-                        "outlet_code": outlet_code,
-                        "ip_address": ip_address,
-                        "deployment": copy_result,
-                        "Execution": None
-                    }
-                    results.append(result)
+                    copy_result["message"] = f"Failed to Deploy Exe On Outlet {outlet_code}: {copy_result.get('message', 'Unknown error')}"
                     if failure_logger:
                         failure_logger.warning(
                             f"outlet_code: {outlet_code} | ip_address: {ip_address} | "
-                            f"deployment_success: False | message: {copy_result.get('message', 'Deployment failed')}"
+                            f"deployment_failed: {copy_result.get('message', 'Unknown error')}"
                         )
+                results.append(copy_result)
             except Exception as e:
-                error_result = {
+                results.append({
                     "outlet_code": outlet_code,
                     "ip_address": ip_address,
-                    "deployment": {"success": False, "message": str(e)},
-                    "Execution": None
-                }
-                results.append(error_result)
+                    "success": False,
+                    "message": f"Failed to Deploy Exe On Outlet {outlet_code}: {str(e)}"
+                })
                 if failure_logger:
                     failure_logger.error(f"outlet_code: {outlet_code} | ip_address: {ip_address} | error: {e}")
 
     return {
         "endpoint": "deploy-new-outlet",
         "timestamp": datetime.now().isoformat(),
-        "total_outlets": len(deployment.servers),
+        "total_outlets": len(servers),
         "data": results
     }
 
