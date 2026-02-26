@@ -758,15 +758,24 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
                 source_share = parts[1]      # e.g. d$
                 source_remote = "\\".join(parts[2:])  # e.g. EPSV\EPSDiscount.exe
 
+                logger.info(f"Downloading from SMB: //{source_ip}/{source_share}/{source_remote}")
+
                 tmp_fd, tmp_path = tempfile.mkstemp(suffix=os.path.basename(src_file))
                 os.close(tmp_fd)
 
-                conn = ImpacketSMBConnection(source_ip, source_ip, timeout=30)
-                conn.login(username, password, '')
-                with open(tmp_path, 'wb') as fh:
-                    conn.getFile(source_share, source_remote, fh.write)
-                conn.close()
+                try:
+                    conn = ImpacketSMBConnection(source_ip, source_ip, timeout=30)
+                    conn.login(username, password, '')
+                    with open(tmp_path, 'wb') as fh:
+                        conn.getFile(source_share, source_remote, fh.write)
+                    conn.close()
+                except Exception as e:
+                    if tmp_path and os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                    raise Exception(f"Failed to download from source {source_ip}/{source_share}/{source_remote}: {e}")
                 local_src = tmp_path
+
+            logger.info(f"Uploading to outlet: //{ip_address}/{share}/{remote_filename}")
 
             try:
                 _smb_copy_file(ip_address, local_src, share, remote_filename, username, password)
