@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import platform
 import socket
+import ntpath
 import logging
 from logging import FileHandler, Formatter
 
@@ -746,7 +747,7 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
     if system != "windows" and IMPACKET_AVAILABLE:
         try:
             share = 'D$'
-            remote_filename = dest_path + '\\' + os.path.basename(src_file)
+            remote_filename = dest_path + '\\' + ntpath.basename(src_file)
 
             # If source is a UNC path, download from source server first
             local_src = src_file
