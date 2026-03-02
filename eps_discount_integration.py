@@ -404,6 +404,124 @@ def _tsch_exec_command(ip_address: str, exe_path: str, username: str, password: 
                 pass
 
 
+def _tsch_kill_command(ip_address: str, process_name: str, username: str, password: str) -> bool:
+    """Kill a process on a remote Windows server using Task Scheduler RPC (MS-TSCH).
+
+    Creates a temporary scheduled task that runs 'taskkill /F /IM <process_name>',
+    waits for it to complete, then deletes the task.
+
+    Requires: impacket library, remote port 445 (SMB named pipe \\pipe\\atsvc).
+
+    Returns:
+        True  -- taskkill command executed successfully
+        False -- failed at any step
+    """
+    import uuid
+    import time
+    task_name = f'\\EPS_KILL_{uuid.uuid4().hex[:8]}'
+
+    xml_task = f"""<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<Triggers>
+<CalendarTrigger>
+<StartBoundary>2015-07-15T20:35:13.2757294</StartBoundary>
+<Enabled>true</Enabled>
+<ScheduleByDay>
+<DaysInterval>1</DaysInterval>
+</ScheduleByDay>
+</CalendarTrigger>
+</Triggers>
+<Principals>
+<Principal id="Author">
+<UserId>{username}</UserId>
+<LogonType>InteractiveToken</LogonType>
+<RunLevel>HighestAvailable</RunLevel>
+</Principal>
+</Principals>
+<Settings>
+<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+<AllowHardTerminate>true</AllowHardTerminate>
+<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+<IdleSettings>
+<StopOnIdleEnd>true</StopOnIdleEnd>
+<RestartOnIdle>false</RestartOnIdle>
+</IdleSettings>
+<AllowStartOnDemand>true</AllowStartOnDemand>
+<Enabled>true</Enabled>
+<Hidden>true</Hidden>
+<RunOnlyIfIdle>false</RunOnlyIfIdle>
+<WakeToRun>false</WakeToRun>
+<ExecutionTimeLimit>PT30S</ExecutionTimeLimit>
+<Priority>7</Priority>
+</Settings>
+<Actions Context="Author">
+<Exec>
+<Command>cmd.exe</Command>
+<Arguments>/c taskkill /F /IM {process_name}</Arguments>
+</Exec>
+</Actions>
+</Task>"""
+
+    if write_logger:
+        write_logger.info(f"[TSCH-KILL] process='{process_name}' | user='{username}' | target={ip_address}")
+
+    logon_type = getattr(tsch, 'TASK_LOGON_INTERACTIVE_TOKEN', 3)
+
+    dce = None
+    try:
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Connecting to {ip_address} Task Scheduler (user={username})...")
+
+        stringbinding = f'ncacn_np:{ip_address}[\\pipe\\atsvc]'
+        rpctransport = impacket_transport.DCERPCTransportFactory(stringbinding)
+        rpctransport.set_credentials(username, password, '', '', '')
+
+        dce = rpctransport.get_dce_rpc()
+        dce.set_credentials(*rpctransport.get_credentials())
+        dce.connect()
+        dce.bind(tsch.MSRPC_UUID_TSCHS)
+
+        tsch.hSchRpcRegisterTask(
+            dce, task_name, xml_task,
+            tsch.TASK_CREATE, NULL, logon_type
+        )
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' registered on {ip_address}")
+
+        tsch.hSchRpcRun(dce, task_name)
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' triggered on {ip_address}")
+
+        # Allow taskkill time to terminate the process before cleanup
+        time.sleep(3)
+
+        tsch.hSchRpcDelete(dce, task_name)
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' deleted from {ip_address}")
+
+        if response_logger:
+            response_logger.info(f"[TSCH-KILL] Successfully executed taskkill for '{process_name}' on {ip_address}")
+        return True
+
+    except Exception as e:
+        if failure_logger:
+            failure_logger.error(f"[TSCH-KILL] Failed to kill '{process_name}' on {ip_address}: {type(e).__name__}: {e}")
+        if dce:
+            try:
+                tsch.hSchRpcDelete(dce, task_name)
+            except Exception:
+                pass
+        raise
+    finally:
+        if dce:
+            try:
+                dce.disconnect()
+            except Exception:
+                pass
+
+
 def _smb_copy_file(ip_address: str, local_path: str, share: str, remote_path: str,
                    username: str, password: str) -> None:
     """Copy a local file to a remote Windows server via SMB.
@@ -934,6 +1052,104 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
         failure_logger.error(f"All methods failed for {ip_address} (outlet {outlet_code}): {summary}")
     return {"outlet_code": outlet_code, "ip_address": ip_address, "success": False, "message": summary}
 
+def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, password: str) -> dict:
+    """Kill EPSDiscount.exe on a remote server and verify it stopped.
+
+    Method selection is platform-aware:
+      - Windows: impacket TSCH → PowerShell taskkill
+      - Linux/Docker: impacket TSCH only (PowerShell is Windows-only)
+    """
+    svc_name = "EPSDiscount.exe"
+    system = platform.system().lower()
+    is_windows = system == "windows"
+    attempts = []
+
+    # --- Method 1: impacket Task Scheduler (cross-platform) ---
+    if IMPACKET_AVAILABLE:
+        try:
+            if write_logger:
+                write_logger.info(f"[TSCH-KILL] Attempting to kill {svc_name} on {ip_address}...")
+            success = _tsch_kill_command(ip_address, svc_name, username, password)
+            if success:
+                logger.info(f"taskkill command executed for {svc_name} on {ip_address} via Task Scheduler")
+                if response_logger:
+                    response_logger.info(f"taskkill sent for {svc_name} on {ip_address} (outlet {outlet_code}) via TSCH")
+            else:
+                attempts.append("TSCH: task creation/trigger failed")
+                logger.warning(f"Task Scheduler kill returned failure on {ip_address}")
+        except Exception as e:
+            attempts.append(f"TSCH: {e}")
+            logger.warning(f"Task Scheduler kill failed for {ip_address}: {e}")
+            if failure_logger:
+                failure_logger.error(f"[TSCH-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
+    else:
+        attempts.append("TSCH: impacket not available")
+        logger.warning(f"impacket not available — cannot use Task Scheduler for {ip_address}")
+
+    # --- Method 2: PowerShell taskkill (Windows-only) ---
+    if is_windows and attempts:
+        try:
+            ps_cmd = (
+                'powershell -NoProfile -NonInteractive -Command '
+                '"$sec = ConvertTo-SecureString \\"{pw}\\" -AsPlainText -Force; '
+                '$cred = New-Object System.Management.Automation.PSCredential(\\"{user}\\", $sec); '
+                'Invoke-Command -ComputerName {ip} -Credential $cred -ScriptBlock {{ '
+                'Stop-Process -Name \\\"{proc}\\\"-Force -ErrorAction SilentlyContinue; '
+                'taskkill /F /IM \\\"{svc}\\\" 2>$null '
+                '}} -ErrorAction Stop"'
+            ).format(pw=password, user=username, ip=ip_address, proc=svc_name.replace(".exe", ""), svc=svc_name)
+
+            result = subprocess.run(ps_cmd, shell=True, capture_output=True, text=True, timeout=40)
+            if result.returncode == 0:
+                logger.info(f"Killed {svc_name} on {ip_address} via PowerShell")
+                if response_logger:
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via PowerShell")
+                attempts.clear()  # Clear previous failures since this method succeeded
+            else:
+                error_detail = result.stderr.strip()
+                attempts.append(f"PowerShell: {error_detail}")
+                logger.warning(f"PowerShell kill returned code {result.returncode} on {ip_address}: {error_detail}")
+        except Exception as e:
+            attempts.append(f"PowerShell: {e}")
+            logger.error(f"Error killing exe on {ip_address}: {e}")
+            if failure_logger:
+                failure_logger.exception(f"Kill exe error on {ip_address}: {e}")
+
+    # If all kill methods failed, return failure immediately
+    if attempts:
+        summary = "; ".join(attempts)
+        logger.error(f"All kill methods failed for {ip_address} (outlet {outlet_code}): {summary}")
+        if failure_logger:
+            failure_logger.error(f"All kill methods failed for {ip_address} (outlet {outlet_code}): {summary}")
+        return {"outlet_code": outlet_code, "ip_address": ip_address, "success": False, "message": summary}
+
+    # --- Verify the process is actually stopped ---
+    import time
+    time.sleep(2)  # Give the OS a moment to fully terminate the process
+    try:
+        still_running = is_service_running(ip_address, svc_name, username, password)
+    except Exception as e:
+        logger.warning(f"Verification check failed for {ip_address}: {e}")
+        still_running = None
+
+    if still_running is True:
+        msg = f"{svc_name} kill command sent but process is still running on {ip_address}"
+        logger.warning(msg)
+        if failure_logger:
+            failure_logger.warning(f"outlet_code: {outlet_code} | ip_address: {ip_address} | {msg}")
+        return {"outlet_code": outlet_code, "ip_address": ip_address, "success": False, "message": msg}
+    elif still_running is False:
+        msg = f"{svc_name} successfully terminated"
+        if response_logger:
+            response_logger.info(f"outlet_code: {outlet_code} | ip_address: {ip_address} | {msg}")
+        return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": msg}
+    else:
+        # None means verification was inconclusive (e.g., running from Linux without impacket for check)
+        msg = f"Kill command sent for {svc_name} but could not verify termination"
+        if response_logger:
+            response_logger.info(f"outlet_code: {outlet_code} | ip_address: {ip_address} | {msg}")
+        return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": msg}
+
 def check_exe_status(outlet_code: str, ip_address: str, username: str, password: str) -> dict:
     """Check exe availability on server"""
     if not is_server_online(ip_address):
@@ -1126,6 +1342,67 @@ async def run_exe_on_servers(servers: List[ServerInfo]):
         "data": results
     }
 
+@app.post("/api/kill-exe")
+async def kill_exe_on_servers(servers: List[ServerInfo]):
+    """
+    Endpoint: Kill (terminate) EPSDiscount.exe on specified servers
+    Request body: [ { "outlet_code": "D007", "ip_address": "172.16.51.41" } ]
+    """
+    if not servers:
+        raise HTTPException(status_code=400, detail="No servers provided")
+
+    logger.info(f"Killing exe on {len(servers)} servers")
+    default_user = get_env_pref("USERNAME")
+    default_pass = get_env_pref("PASSWORD")
+    results = []
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for s in servers:
+            if is_server_online(s.ip_address):
+                futures.append(
+                    (s, executor.submit(kill_exe_on_server, s.outlet_code, s.ip_address, default_user, default_pass))
+                )
+            else:
+                offline_result = {
+                    "outlet_code": s.outlet_code,
+                    "ip_address": s.ip_address,
+                    "success": False,
+                    "message": "Server is offline"
+                }
+                results.append(offline_result)
+                if response_logger:
+                    response_logger.info(f"outlet_code: {s.outlet_code} | ip_address: {s.ip_address} | success: False | message: Server is offline")
+
+        for server_info, future in futures:
+            try:
+                result = future.result()
+                results.append(result)
+                if response_logger:
+                    response_logger.info(
+                        f"outlet_code: {result.get('outlet_code')} | "
+                        f"ip_address: {result.get('ip_address')} | "
+                        f"success: {result.get('success')} | "
+                        f"message: {result.get('message')}"
+                    )
+            except Exception as e:
+                error_result = {
+                    "outlet_code": server_info.outlet_code,
+                    "ip_address": server_info.ip_address,
+                    "success": False,
+                    "message": str(e)
+                }
+                results.append(error_result)
+                if failure_logger:
+                    failure_logger.error(f"outlet_code: {server_info.outlet_code} | ip_address: {server_info.ip_address} | success: False | message: {e}")
+
+    return {
+        "endpoint": "kill-exe",
+        "timestamp": datetime.now().isoformat(),
+        "total_servers": len(servers),
+        "data": results
+    }
+
 @app.post("/api/deploy-new-outlet")
 async def deploy_new_outlet(servers: List[ServerInfo]):
     """
@@ -1223,6 +1500,12 @@ async def api_documentation():
                 "path": "/api/run-exe",
                 "method": "POST",
                 "description": "Run EPSDiscount.exe on online servers"
+            },
+            {
+                "name": "Kill Exe",
+                "path": "/api/kill-exe",
+                "method": "POST",
+                "description": "Terminate EPSDiscount.exe on specified servers"
             },
             {
                 "name": "Deploy New Outlet",
