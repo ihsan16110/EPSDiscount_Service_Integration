@@ -1023,12 +1023,15 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
     is_windows = system == "windows"
     attempts = []  # track each method tried for diagnostics
 
-    # --- Method 1: impacket Task Scheduler (cross-platform, runs in desktop session) ---
+    # --- Method 1: impacket Task Scheduler (cross-platform, runs in desktop session, 30s timeout) ---
     if IMPACKET_AVAILABLE:
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
         try:
             if write_logger:
-                write_logger.info(f"[TSCH] Attempting Task Scheduler execution on {ip_address}...")
-            success = _tsch_exec_command(ip_address, exe_path, username, password)
+                write_logger.info(f"[TSCH] Attempting Task Scheduler execution on {ip_address} (30s timeout)...")
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                future = pool.submit(_tsch_exec_command, ip_address, exe_path, username, password)
+                success = future.result(timeout=30)
             if success:
                 logger.info(f"Successfully executed {exe_path} on {ip_address} via Task Scheduler")
                 if response_logger:
@@ -1037,6 +1040,11 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
             else:
                 attempts.append("TSCH: task creation/trigger failed")
                 logger.warning(f"Task Scheduler execution returned failure on {ip_address}")
+        except FuturesTimeout:
+            attempts.append("TSCH: timed out (30s)")
+            logger.warning(f"Task Scheduler timed out on {ip_address} — falling back")
+            if failure_logger:
+                failure_logger.error(f"[TSCH] Timed out (30s) on {ip_address} (outlet {outlet_code})")
         except Exception as e:
             attempts.append(f"TSCH: {e}")
             logger.warning(f"Task Scheduler execution failed for {ip_address}: {e}")
