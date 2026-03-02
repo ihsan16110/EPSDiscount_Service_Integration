@@ -404,119 +404,65 @@ def _tsch_exec_command(ip_address: str, exe_path: str, username: str, password: 
                 pass
 
 
-def _tsch_kill_command(ip_address: str, process_name: str, username: str, password: str) -> bool:
-    """Kill a process on a remote Windows server using Task Scheduler RPC (MS-TSCH).
+def _wmi_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
+    """Kill a process on a remote Windows server using WMI Win32_Process.Create() over DCOM.
 
-    Runs taskkill.exe DIRECTLY (not via cmd.exe) to avoid InteractiveToken
-    restrictions that block shell commands like cmd.exe /c.
+    Industry-standard approach (same as impacket's wmiexec.py). Uses the same DCOM
+    connection pattern as _wmi_check_process (already proven in this codebase).
+    Runs 'taskkill /F /IM <process>' remotely via Win32_Process.Create().
 
-    Requires: impacket library, remote port 445 (SMB named pipe \\pipe\\atsvc).
+    No file copying, no temp services, no Task Scheduler XML — just a direct WMI call.
+    WMI is a core Windows service (winmgmt) available on all Windows versions since 2000.
+
+    Requires: impacket library, remote ports 135 + dynamic RPC (49152-65535).
 
     Returns:
-        True  -- taskkill command executed successfully
-        False -- failed at any step
+        True  -- kill command executed successfully
+        False -- WMI call failed
     """
-    import uuid
-    import time
-    task_name = f'\\EPS_KILL_{uuid.uuid4().hex[:8]}'
-
-    xml_task = f"""<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-<Triggers>
-<CalendarTrigger>
-<StartBoundary>2015-07-15T20:35:13.2757294</StartBoundary>
-<Enabled>true</Enabled>
-<ScheduleByDay>
-<DaysInterval>1</DaysInterval>
-</ScheduleByDay>
-</CalendarTrigger>
-</Triggers>
-<Principals>
-<Principal id="Author">
-<UserId>{username}</UserId>
-<LogonType>InteractiveToken</LogonType>
-<RunLevel>HighestAvailable</RunLevel>
-</Principal>
-</Principals>
-<Settings>
-<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-<AllowHardTerminate>true</AllowHardTerminate>
-<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-<IdleSettings>
-<StopOnIdleEnd>true</StopOnIdleEnd>
-<RestartOnIdle>false</RestartOnIdle>
-</IdleSettings>
-<AllowStartOnDemand>true</AllowStartOnDemand>
-<Enabled>true</Enabled>
-<Hidden>true</Hidden>
-<RunOnlyIfIdle>false</RunOnlyIfIdle>
-<WakeToRun>false</WakeToRun>
-<ExecutionTimeLimit>PT30S</ExecutionTimeLimit>
-<Priority>7</Priority>
-</Settings>
-<Actions Context="Author">
-<Exec>
-<Command>C:\\Windows\\System32\\taskkill.exe</Command>
-<Arguments>/F /IM {process_name}</Arguments>
-</Exec>
-</Actions>
-</Task>"""
-
-    if write_logger:
-        write_logger.info(f"[TSCH-KILL] process='{process_name}' | user='{username}' | target={ip_address}")
-
-    logon_type = getattr(tsch, 'TASK_LOGON_INTERACTIVE_TOKEN', 3)
-
-    dce = None
+    dcom = None
     try:
         if write_logger:
-            write_logger.info(f"[TSCH-KILL] Connecting to {ip_address} Task Scheduler (user={username})...")
+            write_logger.info(f"[WMI-KILL] Connecting to {ip_address} via DCOM (user={username})...")
 
-        stringbinding = f'ncacn_np:{ip_address}[\\pipe\\atsvc]'
-        rpctransport = impacket_transport.DCERPCTransportFactory(stringbinding)
-        rpctransport.set_credentials(username, password, '', '', '')
-
-        dce = rpctransport.get_dce_rpc()
-        dce.set_credentials(*rpctransport.get_credentials())
-        dce.connect()
-        dce.bind(tsch.MSRPC_UUID_TSCHS)
-
-        tsch.hSchRpcRegisterTask(
-            dce, task_name, xml_task,
-            tsch.TASK_CREATE, NULL, logon_type
+        dcom = DCOMConnection(
+            ip_address,
+            username=username,
+            password=password,
+            domain='',
+            lmhash='',
+            nthash='',
+            oxidResolver=True,
         )
+        iInterface = dcom.CoCreateInstanceEx(
+            impacket_wmi.CLSID_WbemLevel1Login,
+            impacket_wmi.IID_IWbemLevel1Login,
+        )
+        iWbemLevel1Login = impacket_wmi.IWbemLevel1Login(iInterface)
+        iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
+        iWbemLevel1Login.RemRelease()
+
+        command = f'cmd.exe /c taskkill /F /IM {process_name}'
         if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' registered on {ip_address}")
+            write_logger.info(f"[WMI-KILL] Executing Win32_Process.Create('{command}') on {ip_address}")
 
-        tsch.hSchRpcRun(dce, task_name)
+        win32Process, _ = iWbemServices.GetObject('Win32_Process')
+        win32Process.Create(command, 'C:\\', None)
+
         if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' triggered on {ip_address}")
-
-        time.sleep(3)
-
-        tsch.hSchRpcDelete(dce, task_name)
-        if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' deleted from {ip_address}")
-
+            write_logger.info(f"[WMI-KILL] Win32_Process.Create() succeeded on {ip_address}")
         if response_logger:
-            response_logger.info(f"[TSCH-KILL] Successfully executed taskkill for '{process_name}' on {ip_address}")
+            response_logger.info(f"[WMI-KILL] Kill command for '{process_name}' executed on {ip_address}")
         return True
 
     except Exception as e:
         if failure_logger:
-            failure_logger.error(f"[TSCH-KILL] Failed to kill '{process_name}' on {ip_address}: {type(e).__name__}: {e}")
-        if dce:
-            try:
-                tsch.hSchRpcDelete(dce, task_name)
-            except Exception:
-                pass
-        raise
+            failure_logger.error(f"[WMI-KILL] Failed on {ip_address}: {type(e).__name__}: {e}")
+        return False
     finally:
-        if dce:
+        if dcom:
             try:
-                dce.disconnect()
+                dcom.disconnect()
             except Exception:
                 pass
 
@@ -1088,10 +1034,11 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
 def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, password: str) -> dict:
     """Kill EPSDiscount.exe on a remote server and verify it stopped.
 
-    Method selection is platform-aware:
-      - Windows-native:  taskkill /S (direct remote kill, no extra tools)
-      - Cross-platform:  SVCCTL over SMB via impacket (PsExec-style, runs as SYSTEM)
-      - Windows fallback: PowerShell Invoke-Command with Stop-Process
+    Method priority (cross-platform first, then Windows-native fallbacks):
+      1. WMI Win32_Process.Create() over DCOM  (cross-platform, industry standard)
+      2. SVCCTL over SMB via impacket           (cross-platform, PsExec-style fallback)
+      3. Windows-native taskkill /S              (Windows host only)
+      4. PowerShell Invoke-Command               (Windows host only)
     """
     import time
     svc_name = "EPSDiscount.exe"
@@ -1100,62 +1047,27 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
     attempts = []
     killed = False
 
-    # --- Method 1: Windows-native taskkill /S (direct remote kill) ---
-    if is_windows and username and password:
-        try:
-            escaped_password = password.replace('^', '^^').replace('"', '""').replace('&', '^&').replace('|', '^|')
-            taskkill_cmd = f'taskkill /S {ip_address} /U {username} /P "{escaped_password}" /F /IM {svc_name}'
-            if write_logger:
-                write_logger.info(f"[TASKKILL] Attempting native taskkill /S on {ip_address} for {svc_name}...")
-
-            result = subprocess.run(taskkill_cmd, shell=True, capture_output=True, text=True, timeout=20)
-            output = (result.stdout + result.stderr).strip().lower()
-
-            if write_logger:
-                write_logger.info(f"[TASKKILL] {ip_address}: rc={result.returncode}, output={output[:200]}")
-
-            if result.returncode == 0 or 'success' in output or 'terminated' in output:
-                killed = True
-                logger.info(f"Killed {svc_name} on {ip_address} via native taskkill /S")
-                if response_logger:
-                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via taskkill /S")
-            elif 'not found' in output:
-                # Process wasn't running — still a success for kill intent
-                killed = True
-                if response_logger:
-                    response_logger.info(f"{svc_name} not running on {ip_address} (outlet {outlet_code}) — nothing to kill")
-            else:
-                attempts.append(f"taskkill /S: rc={result.returncode}, {output[:100]}")
-                logger.warning(f"taskkill /S failed on {ip_address}: {output[:200]}")
-        except subprocess.TimeoutExpired:
-            attempts.append("taskkill /S: timed out")
-            if write_logger:
-                write_logger.info(f"[TASKKILL] Timed out on {ip_address} — falling back")
-        except Exception as e:
-            attempts.append(f"taskkill /S: {e}")
-            logger.warning(f"taskkill /S exception on {ip_address}: {e}")
-
-    # --- Method 2: Task Scheduler RPC via impacket (cross-platform, proven method) ---
+    # --- Method 1: WMI Win32_Process.Create() over DCOM (industry standard, cross-platform) ---
     if not killed and IMPACKET_AVAILABLE:
         try:
             if write_logger:
-                write_logger.info(f"[TSCH-KILL] Attempting Task Scheduler kill on {ip_address} for {svc_name}...")
-            success = _tsch_kill_command(ip_address, svc_name, username, password)
+                write_logger.info(f"[WMI-KILL] Attempting WMI kill on {ip_address} for {svc_name}...")
+            success = _wmi_kill_process(ip_address, svc_name, username, password)
             if success:
                 killed = True
-                logger.info(f"Killed {svc_name} on {ip_address} via Task Scheduler (impacket)")
+                logger.info(f"Killed {svc_name} on {ip_address} via WMI (impacket)")
                 if response_logger:
-                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via TSCH")
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via WMI")
             else:
-                attempts.append("TSCH: task creation/trigger failed")
-                logger.warning(f"Task Scheduler kill returned failure on {ip_address}")
+                attempts.append("WMI: Win32_Process.Create() failed")
+                logger.warning(f"WMI kill returned failure on {ip_address}")
         except Exception as e:
-            attempts.append(f"TSCH: {e}")
-            logger.warning(f"Task Scheduler kill failed for {ip_address}: {e}")
+            attempts.append(f"WMI: {e}")
+            logger.warning(f"WMI kill failed for {ip_address}: {e}")
             if failure_logger:
-                failure_logger.error(f"[TSCH-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
+                failure_logger.error(f"[WMI-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
 
-    # --- Method 3: SVCCTL over SMB via impacket (PsExec-style fallback) ---
+    # --- Method 2: SVCCTL over SMB via impacket (PsExec-style fallback) ---
     if not killed and IMPACKET_AVAILABLE:
         try:
             if write_logger:
@@ -1175,7 +1087,41 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
             if failure_logger:
                 failure_logger.error(f"[SVCCTL-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
 
-    # --- Method 4: PowerShell Invoke-Command (Windows-only fallback) ---
+    # --- Method 3: Windows-native taskkill /S (direct remote kill, Windows host only) ---
+    if not killed and is_windows and username and password:
+        try:
+            escaped_password = password.replace('^', '^^').replace('"', '""').replace('&', '^&').replace('|', '^|')
+            taskkill_cmd = f'taskkill /S {ip_address} /U {username} /P "{escaped_password}" /F /IM {svc_name}'
+            if write_logger:
+                write_logger.info(f"[TASKKILL] Attempting native taskkill /S on {ip_address} for {svc_name}...")
+
+            result = subprocess.run(taskkill_cmd, shell=True, capture_output=True, text=True, timeout=20)
+            output = (result.stdout + result.stderr).strip().lower()
+
+            if write_logger:
+                write_logger.info(f"[TASKKILL] {ip_address}: rc={result.returncode}, output={output[:200]}")
+
+            if result.returncode == 0 or 'success' in output or 'terminated' in output:
+                killed = True
+                logger.info(f"Killed {svc_name} on {ip_address} via native taskkill /S")
+                if response_logger:
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via taskkill /S")
+            elif 'not found' in output:
+                killed = True
+                if response_logger:
+                    response_logger.info(f"{svc_name} not running on {ip_address} (outlet {outlet_code}) — nothing to kill")
+            else:
+                attempts.append(f"taskkill /S: rc={result.returncode}, {output[:100]}")
+                logger.warning(f"taskkill /S failed on {ip_address}: {output[:200]}")
+        except subprocess.TimeoutExpired:
+            attempts.append("taskkill /S: timed out")
+            if write_logger:
+                write_logger.info(f"[TASKKILL] Timed out on {ip_address} — falling back")
+        except Exception as e:
+            attempts.append(f"taskkill /S: {e}")
+            logger.warning(f"taskkill /S exception on {ip_address}: {e}")
+
+    # --- Method 4: PowerShell Invoke-Command (Windows host only fallback) ---
     if not killed and is_windows:
         try:
             ps_cmd = (
