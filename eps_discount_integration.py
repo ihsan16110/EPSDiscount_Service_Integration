@@ -965,17 +965,19 @@ def copy_file_to_server(outlet_code: str, ip_address: str, src_file: str, userna
 def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password: str) -> dict:
     """Run EPSDiscount.exe on remote server.
 
-    Method selection is platform-aware:
-      - Windows: impacket TSCH → PowerShell
-      - Linux/Docker: impacket TSCH only (PowerShell is Windows-only)
+    Method priority:
+      1. impacket TSCH  (InteractiveToken — runs in desktop session, cross-platform)
+      2. WMI Win32_Process.Create() over DCOM  (cross-platform fallback)
+      3. PowerShell Invoke-Command  (Windows host only)
     """
     dest_folder = get_env_pref("DEST_PATH", "EPS_New")
     exe_path = f"D:\\{dest_folder}\\EPSDiscount.exe"
+    exe_dir = f"D:\\{dest_folder}"
     system = platform.system().lower()
     is_windows = system == "windows"
     attempts = []  # track each method tried for diagnostics
 
-    # --- Method 1: impacket Task Scheduler (cross-platform, works from Linux/Docker) ---
+    # --- Method 1: impacket Task Scheduler (cross-platform, runs in desktop session) ---
     if IMPACKET_AVAILABLE:
         try:
             if write_logger:
@@ -998,7 +1000,49 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
         attempts.append("TSCH: impacket not available")
         logger.warning(f"impacket not available — cannot use Task Scheduler for {ip_address}")
 
-    # --- Method 2: PowerShell remote start (Windows-only) ---
+    # --- Method 2: WMI Win32_Process.Create() over DCOM (cross-platform fallback) ---
+    if IMPACKET_AVAILABLE:
+        try:
+            if write_logger:
+                write_logger.info(f"[WMI-RUN] Attempting WMI process creation on {ip_address}...")
+
+            dcom = DCOMConnection(
+                ip_address,
+                username=username,
+                password=password,
+                domain='',
+                lmhash='',
+                nthash='',
+                oxidResolver=True,
+            )
+            iInterface = dcom.CoCreateInstanceEx(
+                impacket_wmi.CLSID_WbemLevel1Login,
+                impacket_wmi.IID_IWbemLevel1Login,
+            )
+            iWbemLevel1Login = impacket_wmi.IWbemLevel1Login(iInterface)
+            iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
+            iWbemLevel1Login.RemRelease()
+
+            win32Process, _ = iWbemServices.GetObject('Win32_Process')
+            win32Process.Create(exe_path, exe_dir, None)
+
+            try:
+                dcom.disconnect()
+            except Exception:
+                pass
+
+            logger.info(f"Successfully executed {exe_path} on {ip_address} via WMI")
+            if response_logger:
+                response_logger.info(f"Executed {exe_path} on {ip_address} (outlet {outlet_code}) via WMI")
+            return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": "Exe executed via WMI (impacket)"}
+
+        except Exception as e:
+            attempts.append(f"WMI: {e}")
+            logger.warning(f"WMI execution failed for {ip_address}: {e}")
+            if failure_logger:
+                failure_logger.error(f"[WMI-RUN] Exception on {ip_address} (outlet {outlet_code}): {e}")
+
+    # --- Method 3: PowerShell remote start (Windows host only) ---
     if is_windows:
         try:
             ps_cmd = (
