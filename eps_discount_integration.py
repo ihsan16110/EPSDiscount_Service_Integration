@@ -404,6 +404,123 @@ def _tsch_exec_command(ip_address: str, exe_path: str, username: str, password: 
                 pass
 
 
+def _tsch_kill_command(ip_address: str, process_name: str, username: str, password: str) -> bool:
+    """Kill a process on a remote Windows server using Task Scheduler RPC (MS-TSCH).
+
+    Runs taskkill.exe DIRECTLY (not via cmd.exe) to avoid InteractiveToken
+    restrictions that block shell commands like cmd.exe /c.
+
+    Requires: impacket library, remote port 445 (SMB named pipe \\pipe\\atsvc).
+
+    Returns:
+        True  -- taskkill command executed successfully
+        False -- failed at any step
+    """
+    import uuid
+    import time
+    task_name = f'\\EPS_KILL_{uuid.uuid4().hex[:8]}'
+
+    xml_task = f"""<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<Triggers>
+<CalendarTrigger>
+<StartBoundary>2015-07-15T20:35:13.2757294</StartBoundary>
+<Enabled>true</Enabled>
+<ScheduleByDay>
+<DaysInterval>1</DaysInterval>
+</ScheduleByDay>
+</CalendarTrigger>
+</Triggers>
+<Principals>
+<Principal id="Author">
+<UserId>{username}</UserId>
+<LogonType>InteractiveToken</LogonType>
+<RunLevel>HighestAvailable</RunLevel>
+</Principal>
+</Principals>
+<Settings>
+<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+<AllowHardTerminate>true</AllowHardTerminate>
+<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+<IdleSettings>
+<StopOnIdleEnd>true</StopOnIdleEnd>
+<RestartOnIdle>false</RestartOnIdle>
+</IdleSettings>
+<AllowStartOnDemand>true</AllowStartOnDemand>
+<Enabled>true</Enabled>
+<Hidden>true</Hidden>
+<RunOnlyIfIdle>false</RunOnlyIfIdle>
+<WakeToRun>false</WakeToRun>
+<ExecutionTimeLimit>PT30S</ExecutionTimeLimit>
+<Priority>7</Priority>
+</Settings>
+<Actions Context="Author">
+<Exec>
+<Command>C:\\Windows\\System32\\taskkill.exe</Command>
+<Arguments>/F /IM {process_name}</Arguments>
+</Exec>
+</Actions>
+</Task>"""
+
+    if write_logger:
+        write_logger.info(f"[TSCH-KILL] process='{process_name}' | user='{username}' | target={ip_address}")
+
+    logon_type = getattr(tsch, 'TASK_LOGON_INTERACTIVE_TOKEN', 3)
+
+    dce = None
+    try:
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Connecting to {ip_address} Task Scheduler (user={username})...")
+
+        stringbinding = f'ncacn_np:{ip_address}[\\pipe\\atsvc]'
+        rpctransport = impacket_transport.DCERPCTransportFactory(stringbinding)
+        rpctransport.set_credentials(username, password, '', '', '')
+
+        dce = rpctransport.get_dce_rpc()
+        dce.set_credentials(*rpctransport.get_credentials())
+        dce.connect()
+        dce.bind(tsch.MSRPC_UUID_TSCHS)
+
+        tsch.hSchRpcRegisterTask(
+            dce, task_name, xml_task,
+            tsch.TASK_CREATE, NULL, logon_type
+        )
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' registered on {ip_address}")
+
+        tsch.hSchRpcRun(dce, task_name)
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' triggered on {ip_address}")
+
+        time.sleep(3)
+
+        tsch.hSchRpcDelete(dce, task_name)
+        if write_logger:
+            write_logger.info(f"[TSCH-KILL] Task '{task_name}' deleted from {ip_address}")
+
+        if response_logger:
+            response_logger.info(f"[TSCH-KILL] Successfully executed taskkill for '{process_name}' on {ip_address}")
+        return True
+
+    except Exception as e:
+        if failure_logger:
+            failure_logger.error(f"[TSCH-KILL] Failed to kill '{process_name}' on {ip_address}: {type(e).__name__}: {e}")
+        if dce:
+            try:
+                tsch.hSchRpcDelete(dce, task_name)
+            except Exception:
+                pass
+        raise
+    finally:
+        if dce:
+            try:
+                dce.disconnect()
+            except Exception:
+                pass
+
+
 def _smb_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
     """Kill a process on a remote Windows server via SVCCTL over SMB (port 445).
 
@@ -1018,7 +1135,27 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
             attempts.append(f"taskkill /S: {e}")
             logger.warning(f"taskkill /S exception on {ip_address}: {e}")
 
-    # --- Method 2: SVCCTL over SMB via impacket (cross-platform, PsExec-style) ---
+    # --- Method 2: Task Scheduler RPC via impacket (cross-platform, proven method) ---
+    if not killed and IMPACKET_AVAILABLE:
+        try:
+            if write_logger:
+                write_logger.info(f"[TSCH-KILL] Attempting Task Scheduler kill on {ip_address} for {svc_name}...")
+            success = _tsch_kill_command(ip_address, svc_name, username, password)
+            if success:
+                killed = True
+                logger.info(f"Killed {svc_name} on {ip_address} via Task Scheduler (impacket)")
+                if response_logger:
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via TSCH")
+            else:
+                attempts.append("TSCH: task creation/trigger failed")
+                logger.warning(f"Task Scheduler kill returned failure on {ip_address}")
+        except Exception as e:
+            attempts.append(f"TSCH: {e}")
+            logger.warning(f"Task Scheduler kill failed for {ip_address}: {e}")
+            if failure_logger:
+                failure_logger.error(f"[TSCH-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
+
+    # --- Method 3: SVCCTL over SMB via impacket (PsExec-style fallback) ---
     if not killed and IMPACKET_AVAILABLE:
         try:
             if write_logger:
@@ -1038,7 +1175,7 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
             if failure_logger:
                 failure_logger.error(f"[SVCCTL-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
 
-    # --- Method 3: PowerShell Invoke-Command (Windows-only fallback) ---
+    # --- Method 4: PowerShell Invoke-Command (Windows-only fallback) ---
     if not killed and is_windows:
         try:
             ps_cmd = (
