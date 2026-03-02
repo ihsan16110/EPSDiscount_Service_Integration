@@ -404,12 +404,12 @@ def _tsch_exec_command(ip_address: str, exe_path: str, username: str, password: 
                 pass
 
 
-def _wmi_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
-    """Kill a process on a remote Windows server using WMI Win32_Process.Create() over DCOM.
+def _wmi_create_process(ip_address: str, command: str, working_dir: str,
+                        username: str, password: str) -> bool:
+    """Execute a command on a remote Windows server using WMI Win32_Process.Create() over DCOM.
 
     Industry-standard approach (same as impacket's wmiexec.py). Uses the same DCOM
     connection pattern as _wmi_check_process (already proven in this codebase).
-    Runs 'taskkill /F /IM <process>' remotely via Win32_Process.Create().
 
     No file copying, no temp services, no Task Scheduler XML — just a direct WMI call.
     WMI is a core Windows service (winmgmt) available on all Windows versions since 2000.
@@ -417,14 +417,11 @@ def _wmi_kill_process(ip_address: str, process_name: str, username: str, passwor
     Requires: impacket library, remote ports 135 + dynamic RPC (49152-65535).
 
     Returns:
-        True  -- kill command executed successfully
+        True  -- command executed successfully
         False -- WMI call failed
     """
     dcom = None
     try:
-        if write_logger:
-            write_logger.info(f"[WMI-KILL] Connecting to {ip_address} via DCOM (user={username})...")
-
         dcom = DCOMConnection(
             ip_address,
             username=username,
@@ -442,22 +439,13 @@ def _wmi_kill_process(ip_address: str, process_name: str, username: str, passwor
         iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
         iWbemLevel1Login.RemRelease()
 
-        command = f'cmd.exe /c taskkill /F /IM {process_name}'
-        if write_logger:
-            write_logger.info(f"[WMI-KILL] Executing Win32_Process.Create('{command}') on {ip_address}")
-
         win32Process, _ = iWbemServices.GetObject('Win32_Process')
-        win32Process.Create(command, 'C:\\', None)
-
-        if write_logger:
-            write_logger.info(f"[WMI-KILL] Win32_Process.Create() succeeded on {ip_address}")
-        if response_logger:
-            response_logger.info(f"[WMI-KILL] Kill command for '{process_name}' executed on {ip_address}")
+        win32Process.Create(command, working_dir, None)
         return True
 
     except Exception as e:
         if failure_logger:
-            failure_logger.error(f"[WMI-KILL] Failed on {ip_address}: {type(e).__name__}: {e}")
+            failure_logger.error(f"[WMI] Failed on {ip_address}: {type(e).__name__}: {e}")
         return False
     finally:
         if dcom:
@@ -465,6 +453,64 @@ def _wmi_kill_process(ip_address: str, process_name: str, username: str, passwor
                 dcom.disconnect()
             except Exception:
                 pass
+
+
+def _wmi_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
+    """Kill a process on a remote server via WMI with a 30-second timeout.
+
+    Wraps _wmi_create_process with a timeout so DCOM hangs don't block the endpoint.
+    """
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
+    command = f'cmd.exe /c taskkill /F /IM {process_name}'
+    if write_logger:
+        write_logger.info(f"[WMI-KILL] Executing '{command}' on {ip_address} (30s timeout)...")
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(_wmi_create_process, ip_address, command, 'C:\\', username, password)
+        try:
+            success = future.result(timeout=30)
+            if success:
+                if response_logger:
+                    response_logger.info(f"[WMI-KILL] Kill command for '{process_name}' executed on {ip_address}")
+            return success
+        except FuturesTimeout:
+            if failure_logger:
+                failure_logger.error(f"[WMI-KILL] Timed out (30s) on {ip_address}")
+            return False
+        except Exception as e:
+            if failure_logger:
+                failure_logger.error(f"[WMI-KILL] Failed on {ip_address}: {type(e).__name__}: {e}")
+            return False
+
+
+def _wmi_run_process(ip_address: str, exe_path: str, working_dir: str,
+                     username: str, password: str) -> bool:
+    """Start an exe on a remote server via WMI with a 30-second timeout.
+
+    Wraps _wmi_create_process with a timeout so DCOM hangs don't block the endpoint.
+    """
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
+    if write_logger:
+        write_logger.info(f"[WMI-RUN] Executing '{exe_path}' on {ip_address} (30s timeout)...")
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(_wmi_create_process, ip_address, exe_path, working_dir, username, password)
+        try:
+            success = future.result(timeout=30)
+            if success:
+                if response_logger:
+                    response_logger.info(f"[WMI-RUN] Started '{exe_path}' on {ip_address}")
+            return success
+        except FuturesTimeout:
+            if failure_logger:
+                failure_logger.error(f"[WMI-RUN] Timed out (30s) on {ip_address}")
+            return False
+        except Exception as e:
+            if failure_logger:
+                failure_logger.error(f"[WMI-RUN] Failed on {ip_address}: {type(e).__name__}: {e}")
+            return False
 
 
 def _smb_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
@@ -1000,42 +1046,18 @@ def run_exe_on_server(outlet_code: str, ip_address: str, username: str, password
         attempts.append("TSCH: impacket not available")
         logger.warning(f"impacket not available — cannot use Task Scheduler for {ip_address}")
 
-    # --- Method 2: WMI Win32_Process.Create() over DCOM (cross-platform fallback) ---
+    # --- Method 2: WMI Win32_Process.Create() over DCOM (cross-platform fallback, 30s timeout) ---
     if IMPACKET_AVAILABLE:
         try:
-            if write_logger:
-                write_logger.info(f"[WMI-RUN] Attempting WMI process creation on {ip_address}...")
-
-            dcom = DCOMConnection(
-                ip_address,
-                username=username,
-                password=password,
-                domain='',
-                lmhash='',
-                nthash='',
-                oxidResolver=True,
-            )
-            iInterface = dcom.CoCreateInstanceEx(
-                impacket_wmi.CLSID_WbemLevel1Login,
-                impacket_wmi.IID_IWbemLevel1Login,
-            )
-            iWbemLevel1Login = impacket_wmi.IWbemLevel1Login(iInterface)
-            iWbemServices = iWbemLevel1Login.NTLMLogin('//./root/cimv2', NULL, NULL)
-            iWbemLevel1Login.RemRelease()
-
-            win32Process, _ = iWbemServices.GetObject('Win32_Process')
-            win32Process.Create(exe_path, exe_dir, None)
-
-            try:
-                dcom.disconnect()
-            except Exception:
-                pass
-
-            logger.info(f"Successfully executed {exe_path} on {ip_address} via WMI")
-            if response_logger:
-                response_logger.info(f"Executed {exe_path} on {ip_address} (outlet {outlet_code}) via WMI")
-            return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": "Exe executed via WMI (impacket)"}
-
+            success = _wmi_run_process(ip_address, exe_path, exe_dir, username, password)
+            if success:
+                logger.info(f"Successfully executed {exe_path} on {ip_address} via WMI")
+                if response_logger:
+                    response_logger.info(f"Executed {exe_path} on {ip_address} (outlet {outlet_code}) via WMI")
+                return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": "Exe executed via WMI (impacket)"}
+            else:
+                attempts.append("WMI: Win32_Process.Create() failed or timed out")
+                logger.warning(f"WMI execution failed on {ip_address}")
         except Exception as e:
             attempts.append(f"WMI: {e}")
             logger.warning(f"WMI execution failed for {ip_address}: {e}")
