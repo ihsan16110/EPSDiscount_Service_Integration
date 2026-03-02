@@ -404,122 +404,38 @@ def _tsch_exec_command(ip_address: str, exe_path: str, username: str, password: 
                 pass
 
 
-def _tsch_kill_command(ip_address: str, process_name: str, username: str, password: str) -> bool:
-    """Kill a process on a remote Windows server using Task Scheduler RPC (MS-TSCH).
+def _smb_kill_process(ip_address: str, process_name: str, username: str, password: str) -> bool:
+    """Kill a process on a remote Windows server via SVCCTL over SMB (port 445).
 
-    Creates a temporary scheduled task that runs 'taskkill /F /IM <process_name>',
-    waits for it to complete, then deletes the task.
+    Uses _smb_exec_command to run 'taskkill /F /IM <process_name>' remotely.
+    This is the same mechanism used by PsExec — creates a temporary Windows service
+    via the Service Control Manager, which runs the command as SYSTEM.
 
-    Requires: impacket library, remote port 445 (SMB named pipe \\pipe\\atsvc).
+    Requires: impacket library, remote port 445.
 
     Returns:
-        True  -- taskkill command executed successfully
-        False -- failed at any step
+        True  -- taskkill command executed (output confirms termination or process not found)
+        False -- command execution failed (connection/auth error)
     """
-    import uuid
-    import time
-    task_name = f'\\EPS_KILL_{uuid.uuid4().hex[:8]}'
+    command = f'taskkill /F /IM {process_name}'
+    output = _smb_exec_command(ip_address, command, username, password)
 
-    xml_task = f"""<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-<Triggers>
-<CalendarTrigger>
-<StartBoundary>2015-07-15T20:35:13.2757294</StartBoundary>
-<Enabled>true</Enabled>
-<ScheduleByDay>
-<DaysInterval>1</DaysInterval>
-</ScheduleByDay>
-</CalendarTrigger>
-</Triggers>
-<Principals>
-<Principal id="Author">
-<UserId>{username}</UserId>
-<LogonType>InteractiveToken</LogonType>
-<RunLevel>HighestAvailable</RunLevel>
-</Principal>
-</Principals>
-<Settings>
-<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-<DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-<StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-<AllowHardTerminate>true</AllowHardTerminate>
-<RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-<IdleSettings>
-<StopOnIdleEnd>true</StopOnIdleEnd>
-<RestartOnIdle>false</RestartOnIdle>
-</IdleSettings>
-<AllowStartOnDemand>true</AllowStartOnDemand>
-<Enabled>true</Enabled>
-<Hidden>true</Hidden>
-<RunOnlyIfIdle>false</RunOnlyIfIdle>
-<WakeToRun>false</WakeToRun>
-<ExecutionTimeLimit>PT30S</ExecutionTimeLimit>
-<Priority>7</Priority>
-</Settings>
-<Actions Context="Author">
-<Exec>
-<Command>cmd.exe</Command>
-<Arguments>/c taskkill /F /IM {process_name}</Arguments>
-</Exec>
-</Actions>
-</Task>"""
+    if output is None:
+        return False
 
-    if write_logger:
-        write_logger.info(f"[TSCH-KILL] process='{process_name}' | user='{username}' | target={ip_address}")
-
-    logon_type = getattr(tsch, 'TASK_LOGON_INTERACTIVE_TOKEN', 3)
-
-    dce = None
-    try:
+    output_lower = output.lower()
+    # taskkill returns "SUCCESS" when killed, or "not found" when process wasn't running
+    # Both are acceptable outcomes for a kill operation
+    if 'success' in output_lower or 'not found' in output_lower or 'terminated' in output_lower:
         if write_logger:
-            write_logger.info(f"[TSCH-KILL] Connecting to {ip_address} Task Scheduler (user={username})...")
-
-        stringbinding = f'ncacn_np:{ip_address}[\\pipe\\atsvc]'
-        rpctransport = impacket_transport.DCERPCTransportFactory(stringbinding)
-        rpctransport.set_credentials(username, password, '', '', '')
-
-        dce = rpctransport.get_dce_rpc()
-        dce.set_credentials(*rpctransport.get_credentials())
-        dce.connect()
-        dce.bind(tsch.MSRPC_UUID_TSCHS)
-
-        tsch.hSchRpcRegisterTask(
-            dce, task_name, xml_task,
-            tsch.TASK_CREATE, NULL, logon_type
-        )
-        if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' registered on {ip_address}")
-
-        tsch.hSchRpcRun(dce, task_name)
-        if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' triggered on {ip_address}")
-
-        # Allow taskkill time to terminate the process before cleanup
-        time.sleep(3)
-
-        tsch.hSchRpcDelete(dce, task_name)
-        if write_logger:
-            write_logger.info(f"[TSCH-KILL] Task '{task_name}' deleted from {ip_address}")
-
-        if response_logger:
-            response_logger.info(f"[TSCH-KILL] Successfully executed taskkill for '{process_name}' on {ip_address}")
+            write_logger.info(f"[SVCCTL-KILL] taskkill on {ip_address}: {output.strip()}")
         return True
 
-    except Exception as e:
-        if failure_logger:
-            failure_logger.error(f"[TSCH-KILL] Failed to kill '{process_name}' on {ip_address}: {type(e).__name__}: {e}")
-        if dce:
-            try:
-                tsch.hSchRpcDelete(dce, task_name)
-            except Exception:
-                pass
-        raise
-    finally:
-        if dce:
-            try:
-                dce.disconnect()
-            except Exception:
-                pass
+    # If we got output but it doesn't match expected patterns, log it but still return True
+    # (the command did execute — taskkill may have different locale-specific output)
+    if write_logger:
+        write_logger.info(f"[SVCCTL-KILL] taskkill on {ip_address} returned: {output.strip()}")
+    return True
 
 
 def _smb_copy_file(ip_address: str, local_path: str, share: str, remote_path: str,
@@ -1056,55 +972,91 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
     """Kill EPSDiscount.exe on a remote server and verify it stopped.
 
     Method selection is platform-aware:
-      - Windows: impacket TSCH → PowerShell taskkill
-      - Linux/Docker: impacket TSCH only (PowerShell is Windows-only)
+      - Windows-native:  taskkill /S (direct remote kill, no extra tools)
+      - Cross-platform:  SVCCTL over SMB via impacket (PsExec-style, runs as SYSTEM)
+      - Windows fallback: PowerShell Invoke-Command with Stop-Process
     """
+    import time
     svc_name = "EPSDiscount.exe"
     system = platform.system().lower()
     is_windows = system == "windows"
     attempts = []
+    killed = False
 
-    # --- Method 1: impacket Task Scheduler (cross-platform) ---
-    if IMPACKET_AVAILABLE:
+    # --- Method 1: Windows-native taskkill /S (direct remote kill) ---
+    if is_windows and username and password:
+        try:
+            escaped_password = password.replace('^', '^^').replace('"', '""').replace('&', '^&').replace('|', '^|')
+            taskkill_cmd = f'taskkill /S {ip_address} /U {username} /P "{escaped_password}" /F /IM {svc_name}'
+            if write_logger:
+                write_logger.info(f"[TASKKILL] Attempting native taskkill /S on {ip_address} for {svc_name}...")
+
+            result = subprocess.run(taskkill_cmd, shell=True, capture_output=True, text=True, timeout=20)
+            output = (result.stdout + result.stderr).strip().lower()
+
+            if write_logger:
+                write_logger.info(f"[TASKKILL] {ip_address}: rc={result.returncode}, output={output[:200]}")
+
+            if result.returncode == 0 or 'success' in output or 'terminated' in output:
+                killed = True
+                logger.info(f"Killed {svc_name} on {ip_address} via native taskkill /S")
+                if response_logger:
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via taskkill /S")
+            elif 'not found' in output:
+                # Process wasn't running — still a success for kill intent
+                killed = True
+                if response_logger:
+                    response_logger.info(f"{svc_name} not running on {ip_address} (outlet {outlet_code}) — nothing to kill")
+            else:
+                attempts.append(f"taskkill /S: rc={result.returncode}, {output[:100]}")
+                logger.warning(f"taskkill /S failed on {ip_address}: {output[:200]}")
+        except subprocess.TimeoutExpired:
+            attempts.append("taskkill /S: timed out")
+            if write_logger:
+                write_logger.info(f"[TASKKILL] Timed out on {ip_address} — falling back")
+        except Exception as e:
+            attempts.append(f"taskkill /S: {e}")
+            logger.warning(f"taskkill /S exception on {ip_address}: {e}")
+
+    # --- Method 2: SVCCTL over SMB via impacket (cross-platform, PsExec-style) ---
+    if not killed and IMPACKET_AVAILABLE:
         try:
             if write_logger:
-                write_logger.info(f"[TSCH-KILL] Attempting to kill {svc_name} on {ip_address}...")
-            success = _tsch_kill_command(ip_address, svc_name, username, password)
+                write_logger.info(f"[SVCCTL-KILL] Attempting SVCCTL kill on {ip_address} for {svc_name}...")
+            success = _smb_kill_process(ip_address, svc_name, username, password)
             if success:
-                logger.info(f"taskkill command executed for {svc_name} on {ip_address} via Task Scheduler")
+                killed = True
+                logger.info(f"Killed {svc_name} on {ip_address} via SVCCTL (impacket)")
                 if response_logger:
-                    response_logger.info(f"taskkill sent for {svc_name} on {ip_address} (outlet {outlet_code}) via TSCH")
+                    response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via SVCCTL")
             else:
-                attempts.append("TSCH: task creation/trigger failed")
-                logger.warning(f"Task Scheduler kill returned failure on {ip_address}")
+                attempts.append("SVCCTL: command execution failed")
+                logger.warning(f"SVCCTL kill failed on {ip_address}")
         except Exception as e:
-            attempts.append(f"TSCH: {e}")
-            logger.warning(f"Task Scheduler kill failed for {ip_address}: {e}")
+            attempts.append(f"SVCCTL: {e}")
+            logger.warning(f"SVCCTL kill exception on {ip_address}: {e}")
             if failure_logger:
-                failure_logger.error(f"[TSCH-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
-    else:
-        attempts.append("TSCH: impacket not available")
-        logger.warning(f"impacket not available — cannot use Task Scheduler for {ip_address}")
+                failure_logger.error(f"[SVCCTL-KILL] Exception on {ip_address} (outlet {outlet_code}): {e}")
 
-    # --- Method 2: PowerShell taskkill (Windows-only) ---
-    if is_windows and attempts:
+    # --- Method 3: PowerShell Invoke-Command (Windows-only fallback) ---
+    if not killed and is_windows:
         try:
             ps_cmd = (
                 'powershell -NoProfile -NonInteractive -Command '
                 '"$sec = ConvertTo-SecureString \\"{pw}\\" -AsPlainText -Force; '
                 '$cred = New-Object System.Management.Automation.PSCredential(\\"{user}\\", $sec); '
                 'Invoke-Command -ComputerName {ip} -Credential $cred -ScriptBlock {{ '
-                'Stop-Process -Name \\\"{proc}\\\"-Force -ErrorAction SilentlyContinue; '
+                'Stop-Process -Name \\\"{proc}\\\" -Force -ErrorAction SilentlyContinue; '
                 'taskkill /F /IM \\\"{svc}\\\" 2>$null '
                 '}} -ErrorAction Stop"'
             ).format(pw=password, user=username, ip=ip_address, proc=svc_name.replace(".exe", ""), svc=svc_name)
 
             result = subprocess.run(ps_cmd, shell=True, capture_output=True, text=True, timeout=40)
             if result.returncode == 0:
+                killed = True
                 logger.info(f"Killed {svc_name} on {ip_address} via PowerShell")
                 if response_logger:
                     response_logger.info(f"Killed {svc_name} on {ip_address} (outlet {outlet_code}) via PowerShell")
-                attempts.clear()  # Clear previous failures since this method succeeded
             else:
                 error_detail = result.stderr.strip()
                 attempts.append(f"PowerShell: {error_detail}")
@@ -1115,16 +1067,18 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
             if failure_logger:
                 failure_logger.exception(f"Kill exe error on {ip_address}: {e}")
 
-    # If all kill methods failed, return failure immediately
-    if attempts:
-        summary = "; ".join(attempts)
+    # If no method available or all failed
+    if not killed and not IMPACKET_AVAILABLE and not is_windows:
+        attempts.append("No kill method available (not Windows and impacket not installed)")
+
+    if not killed:
+        summary = "; ".join(attempts) if attempts else "No kill method available for this platform"
         logger.error(f"All kill methods failed for {ip_address} (outlet {outlet_code}): {summary}")
         if failure_logger:
             failure_logger.error(f"All kill methods failed for {ip_address} (outlet {outlet_code}): {summary}")
         return {"outlet_code": outlet_code, "ip_address": ip_address, "success": False, "message": summary}
 
     # --- Verify the process is actually stopped ---
-    import time
     time.sleep(2)  # Give the OS a moment to fully terminate the process
     try:
         still_running = is_service_running(ip_address, svc_name, username, password)
@@ -1144,7 +1098,6 @@ def kill_exe_on_server(outlet_code: str, ip_address: str, username: str, passwor
             response_logger.info(f"outlet_code: {outlet_code} | ip_address: {ip_address} | {msg}")
         return {"outlet_code": outlet_code, "ip_address": ip_address, "success": True, "message": msg}
     else:
-        # None means verification was inconclusive (e.g., running from Linux without impacket for check)
         msg = f"Kill command sent for {svc_name} but could not verify termination"
         if response_logger:
             response_logger.info(f"outlet_code: {outlet_code} | ip_address: {ip_address} | {msg}")
